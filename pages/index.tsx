@@ -24,7 +24,10 @@ export default function Home() {
           onRemoveEndpoint={removeMe => setEndpoints(endpoints.filter(e => e !== removeMe))}
           />
 
-        { endpoints.map(endpoint => <PingGraph key={endpoint} endpoint={endpoint} />)}
+        { endpoints.map(endpoint => <PingGraph
+            key={endpoint}
+            endpoint={endpoint}
+            windowMs={10000} />)}
       </main>
 
       <style jsx>{`

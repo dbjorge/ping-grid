@@ -1,12 +1,44 @@
 import useSWR from 'swr'
+import { useState } from 'react';
+import { inspect } from 'util';
 
-const restJsonFetcher = url => fetch(url).then(r => r.json())
+const pingFetcher = endpoint => fetch(`/api/ping?endpoint=${endpoint}`)
+    .then(r => r.json())
+    .then(j => ({ ...j, timestampMs: getCurrentTimeMs() }))
 
-export function PingGraph({ endpoint }) {
-    const { data, error } = useSWR(`/api/ping`, restJsonFetcher, {
-        initialData: { text: 'Loading...' },
-        refreshInterval: 3000
+type PingResult = {
+    timestampMs: number;
+    pingMs: number;
+};
+
+type PingGraphProps = {
+    endpoint: string,
+    windowMs: number;
+};
+
+function getCurrentTimeMs(): number {
+    return new Date().getTime();
+}
+
+export function PingGraph(props: PingGraphProps) {
+    const { endpoint, windowMs } = props;
+    const currentTimeMs = getCurrentTimeMs();
+    const cutoffTimeMs = currentTimeMs - windowMs;
+
+    const [ pingHistory, setPingHistory ] = useState<PingResult[]>([]);
+    const { data: pingResult, error } = useSWR(endpoint, pingFetcher, {
+        dedupingInterval: 500,
+        refreshInterval: 1000,
     });
+
+    let updatedPingHistory = pingHistory.filter(h => h.timestampMs >= cutoffTimeMs);
+    if (pingHistory.length !== updatedPingHistory.length) {
+        setPingHistory(updatedPingHistory);
+    }
+    if (pingResult && (pingHistory.length === 0 || pingHistory[0].timestampMs !== pingResult.timestampMs)) {
+        updatedPingHistory = [pingResult, ...updatedPingHistory];
+        setPingHistory(updatedPingHistory);
+    }
 
     return <>
         <style jsx>{`
@@ -17,7 +49,9 @@ export function PingGraph({ endpoint }) {
 
         <div className="container">
             <h2>{endpoint}</h2>
-            <div>{ data ? data.text : error }</div>
+            <div>Last updated: { pingHistory.length > 0 ? pingHistory[0].timestampMs : 'never' }</div>
+            <div>{ inspect(pingHistory) }</div>
+            { error ? <div>{error}</div> : null }
         </div>
     </>;
 }
