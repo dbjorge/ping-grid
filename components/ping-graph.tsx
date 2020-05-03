@@ -1,57 +1,70 @@
-import useSWR from 'swr'
-import { useState } from 'react';
-import { inspect } from 'util';
-
-const pingFetcher = endpoint => fetch(`/api/ping?endpoint=${endpoint}`)
-    .then(r => r.json())
-    .then(j => ({ ...j, timestampMs: getCurrentTimeMs() }))
-
-type PingResult = {
-    timestampMs: number;
-    pingMs: number;
-};
-
-type PingGraphProps = {
-    endpoint: string,
-    windowMs: number;
-};
+import { PingHistory, PingResult } from '../types/ping-types';
+import * as d3 from 'd3';
+import { GraphAxis } from './graph-axis';
+import { GraphGrid } from './graph-grid';
 
 function getCurrentTimeMs(): number {
     return new Date().getTime();
 }
 
+export type PingGraphProps = {
+    width: number;
+    height: number;
+    pingHistory: PingHistory;
+};
+
+type GraphPoint = { x: number, y: number };
+
 export function PingGraph(props: PingGraphProps) {
-    const { endpoint, windowMs } = props;
-    const currentTimeMs = getCurrentTimeMs();
-    const cutoffTimeMs = currentTimeMs - windowMs;
+    const { width, height, pingHistory } = props;
 
-    const [ pingHistory, setPingHistory ] = useState<PingResult[]>([]);
-    const { data: pingResult, error } = useSWR(endpoint, pingFetcher, {
-        dedupingInterval: 500,
-        refreshInterval: 1000,
-    });
+    const currentTimestampMs = getCurrentTimeMs();
 
-    let updatedPingHistory = pingHistory.filter(h => h.timestampMs >= cutoffTimeMs);
-    if (pingHistory.length !== updatedPingHistory.length) {
-        setPingHistory(updatedPingHistory);
-    }
-    if (pingResult && (pingHistory.length === 0 || pingHistory[0].timestampMs !== pingResult.timestampMs)) {
-        updatedPingHistory = [pingResult, ...updatedPingHistory];
-        setPingHistory(updatedPingHistory);
-    }
+    const data: GraphPoint[] = pingHistory.map(ping => ({
+        x: Math.round((ping.clientTimestampMs - currentTimestampMs) / 1000),
+        y: ping.pingMs
+    }));
 
-    return <>
+    const margin = {top: 5, right: 20, bottom: 20, left: 50};
+    const transform='translate(' + margin.left + ',' + margin.top + ')';
+    const dataWidth = width - (margin.left + margin.right);
+    const dataHeight = height - (margin.top + margin.bottom);
+
+    const x = d3.scaleLinear()
+        .domain([-60, 0])
+        .rangeRound([0, dataWidth]);
+
+    const y = d3.scaleLinear()
+        .domain([0, 500])
+        .range([dataHeight, 0]);
+
+    const line = d3.line<GraphPoint>()
+        .x(d => x(d.x))
+        .y(d => y(d.y));
+
+    const xAxis = d3.axisBottom(x).ticks(5).tickFormat(d => `${d}s`);
+    const yAxis = d3.axisLeft(y).ticks(5).tickFormat(d => `${d}ms`);
+
+    return <div>
         <style jsx>{`
-            .container {
-                border: 1px solid;
+            .line {
+                fill: none;
+                stroke: #7dc7f4;
+                stroke-width: 4px;
+            }
+            .shadow {
+                filter: drop-shadow( 0px 2px 2px rgba(0,0,0,.3) );
             }
         `}</style>
+        <svg width={width} height={height}>
+            <g transform={transform}>
+                <GraphAxis height={dataHeight} axis={xAxis} axisType="x" />
+                <GraphAxis height={dataHeight} axis={yAxis} axisType="y" />
 
-        <div className="container">
-            <h2>{endpoint}</h2>
-            <div>Last updated: { pingHistory.length > 0 ? pingHistory[0].timestampMs : 'never' }</div>
-            <div>{ inspect(pingHistory) }</div>
-            { error ? <div>{error}</div> : null }
-        </div>
-    </>;
+                <GraphGrid width={dataWidth} height={dataHeight} axis={yAxis} axisType="y" />
+
+                <path className="line shadow" d={line(data)} strokeLinecap="round"/>
+            </g>
+        </svg>
+    </div>;
 }

@@ -1,4 +1,4 @@
-import { RefObject } from "react";
+import { createRef } from "react";
 
 type EndpointSelectorProps = {
     endpoints: string[],
@@ -7,7 +7,7 @@ type EndpointSelectorProps = {
 };
 
 export function EndpointSelector(props: EndpointSelectorProps) {
-    let addEndpointInputRef: RefObject<HTMLInputElement>;
+    let addEndpointInputRef = createRef<HTMLInputElement>();
 
     function handleSubmit(event) {
         event.preventDefault();

@@ -1,10 +1,21 @@
 import Head from 'next/head'
 import { useState } from 'react';
 import { EndpointSelector } from '../components/endpoint-selector';
-import { PingGraph } from '../components/ping-graph';
+import { PingTracker } from '../components/ping-tracker';
 
 export default function Home() {
-  const [ endpoints, setEndpoints ] = useState(['sjc01.login.pathofexile.com']);
+  const [ endpoints, setEndpoints ] = useState([
+    // tracert sjc.login.pathofexile.com
+    '192.168.1.1',
+    '96.120.102.133',
+    '96.110.249.101',
+    'po-2-rur202.bellevue.wa.seattle.comcast.net',
+    'be-203-ar01.seattle.wa.seattle.comcast.net',
+    'be-33650-cr01.seattle.wa.ibone.comcast.net',
+    'be-10846-pe01.seattle.wa.ibone.comcast.net',
+    '96.87.8.166',
+    'sjc01.login.pathofexile.com',
+  ]);
 
   return (
     <div className="container">
@@ -14,28 +25,28 @@ export default function Home() {
       </Head>
 
       <main>
-        <h1 className="title">
-          Welcome to... ping graph!
-        </h1>
-
+        {/*
         <EndpointSelector
           endpoints={endpoints}
           onAddEndpoint={addMe => setEndpoints([...endpoints, addMe]) }
           onRemoveEndpoint={removeMe => setEndpoints(endpoints.filter(e => e !== removeMe))}
           />
+        */}
 
-        { endpoints.map(endpoint => <PingGraph
+        { endpoints.map(endpoint => <PingTracker
             key={endpoint}
             endpoint={endpoint}
-            windowMs={10000} />)}
+            windowMs={60000}
+            width={400}
+            height={200} />)}
       </main>
 
       <style jsx>{`
         main {
+          flex-wrap: wrap;
           padding: 5rem 0;
-          flex: 1;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           justify-content: center;
           align-items: center;
         }

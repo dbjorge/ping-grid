@@ -1,9 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+import ping from 'ping'
+import { PingApiResult } from '../../types/ping-types';
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
-    const endpoint = req.query['endpoint'];
-    const serverTimestampMs = new Date().getTime();
-    const pingMs = Math.random()*500;
+export default async (req: NextApiRequest, res: NextApiResponse<PingApiResult>) => {
+    const endpoint = req.query['endpoint'] as string;
+    const timestampMs = new Date().getTime();
+    const rawPingResult = await ping.promise.probe(endpoint, { timeout: '2', extra: ['-n', '1']});
 
-    res.status(200).json({ endpoint, serverTimestampMs, pingMs });
+    const pingMs = rawPingResult.time;
+
+    res.status(200).json({ endpoint, timestampMs, pingMs });
 }
