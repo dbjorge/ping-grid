@@ -55,7 +55,6 @@ export function PingTracker(props: PingTrackerProps) {
         <div className="container">
             <h2 className="title">{endpoint}</h2>
             <PingGraph pingHistory={updatedPingHistory} width={props.width} height={props.height} />
-            { error ? <div>{error.message}</div> : null }
         </div>
     </>;
 }

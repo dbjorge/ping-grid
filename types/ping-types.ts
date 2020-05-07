@@ -1,7 +1,7 @@
 export type PingApiResult = {
     endpoint: string;
     timestampMs: number;
-    pingMs: number;
+    pingMs: number | 'unknown';
 };
 
 export type PingResult = PingApiResult & { clientTimestampMs: number };

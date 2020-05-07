@@ -2,6 +2,7 @@ import { PingHistory, PingResult } from '../types/ping-types';
 import * as d3 from 'd3';
 import { GraphAxis } from './graph-axis';
 import { GraphGrid } from './graph-grid';
+import { isNumber } from 'util';
 
 function getCurrentTimeMs(): number {
     return new Date().getTime();
@@ -22,7 +23,7 @@ export function PingGraph(props: PingGraphProps) {
 
     const data: GraphPoint[] = pingHistory.map(ping => ({
         x: Math.round((ping.clientTimestampMs - currentTimestampMs) / 1000),
-        y: ping.pingMs
+        y: isNumber(ping.pingMs) ? ping.pingMs : 500,.,
     }));
 
     const margin = {top: 5, right: 20, bottom: 20, left: 50};
