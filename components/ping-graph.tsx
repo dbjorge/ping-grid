@@ -23,7 +23,7 @@ export function PingGraph(props: PingGraphProps) {
 
     const data: GraphPoint[] = pingHistory.map(ping => ({
         x: Math.round((ping.clientTimestampMs - currentTimestampMs) / 1000),
-        y: isNumber(ping.pingMs) ? ping.pingMs : 500,.,
+        y: isNumber(ping.pingMs) ? ping.pingMs : 500,
     }));
 
     const margin = {top: 5, right: 20, bottom: 20, left: 50};
