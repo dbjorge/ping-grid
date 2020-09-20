@@ -7,13 +7,10 @@ export default function Home() {
   const [ endpoints, setEndpoints ] = useState([
     // tracert sjc.login.pathofexile.com
     '192.168.1.1',
-    '96.120.102.133',
-    '96.110.249.101',
-    'po-2-rur202.bellevue.wa.seattle.comcast.net',
-    'be-203-ar01.seattle.wa.seattle.comcast.net',
-    'be-33650-cr01.seattle.wa.ibone.comcast.net',
-    'be-10846-pe01.seattle.wa.ibone.comcast.net',
-    '96.87.8.166',
+    '96.120.70.113',
+    '96.110.28.13',
+    '162.151.113.73',
+    '76.96.121.242',
     'sjc01.login.pathofexile.com',
   ]);
 
